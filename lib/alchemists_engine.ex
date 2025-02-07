@@ -19,4 +19,8 @@ defmodule AlchemistsEngine do
   def add_player_to_game(game, player) do
     Game.add_player(game, player)
   end
+
+  def begin_setup(game) do
+    Game.begin_setup(game)
+  end
 end

@@ -45,4 +45,30 @@ defmodule AlchemistsEngineTest do
 
     assert {:error, "invalid transition" <> _} = AlchemistsEngine.add_player_to_game(game, player)
   end
+
+  test "cannot begin setting up a game with fewer than 2 players" do
+    {:ok, game} = AlchemistsEngine.create_game("Test Game")
+    {:ok, player} = AlchemistsEngine.create_player("Alan")
+    {:ok, game} = AlchemistsEngine.add_player_to_game(game, player)
+
+    assert {:error, "game needs at least two" <> _} = AlchemistsEngine.begin_setup(game)
+  end
+
+  test "setting up a game adds 5 Adventurers to the game" do
+    {:ok, game} = AlchemistsEngine.create_game("Test Game")
+    {:ok, player} = AlchemistsEngine.create_player("Alan")
+    player = struct(player, state: "idle")
+    game = struct(game, players: [player, player, player, player])
+
+    assert {:ok,
+            %AlchemistsEngine.Game{
+              adventurers: [
+                %AlchemistsEngine.Adventurer{},
+                %AlchemistsEngine.Adventurer{},
+                %AlchemistsEngine.Adventurer{},
+                %AlchemistsEngine.Adventurer{},
+                %AlchemistsEngine.Adventurer{}
+              ]
+            }} = AlchemistsEngine.begin_setup(game)
+  end
 end

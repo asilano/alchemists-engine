@@ -15,4 +15,10 @@ defmodule AlchemistsEngine.Game do
       Fsmx.transition(%Game{game | players: [player | game.players]}, "created")
     end
   end
+
+  def begin_setup(game) do
+    with {:ok, game} <- Fsmx.transition(game, "setup_adventurers") do
+      {:ok, game}
+    end
+  end
 end
