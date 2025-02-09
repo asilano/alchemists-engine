@@ -1,6 +1,6 @@
 defmodule AlchemistsEngine.Game do
   alias AlchemistsEngine.Game
-  defstruct [:state, :name, players: [], adventurers: []]
+  defstruct [:state, :name, players: [], adventurers: [], artifacts: {}, favours: []]
 
   use Fsmx.Struct, fsm: AlchemistsEngine.GameLifecycle
 
@@ -17,7 +17,9 @@ defmodule AlchemistsEngine.Game do
   end
 
   def begin_setup(game) do
-    with {:ok, game} <- Fsmx.transition(game, "setup_adventurers") do
+    with {:ok, game} <- Fsmx.transition(game, "setup_adventurers"),
+         {:ok, game} <- Fsmx.transition(game, "setup_artifacts"),
+         {:ok, game} <- Fsmx.transition(game, "setup_favours") do
       {:ok, game}
     end
   end

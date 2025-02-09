@@ -6,7 +6,8 @@ defmodule AlchemistsEngine.GameLifecycle do
       "created" => ["adding_player", "setup_adventurers"],
       "adding_player" => ["created"],
       "setup_adventurers" => ["setup_artifacts"],
-      "setup_artifacts" => ["setup_ingredients"],
+      "setup_artifacts" => ["setup_favours"],
+      "setup_favours" => ["setup_ingredients"],
       "setup_ingredients" => ["deal_to_players"],
       "deal_to_players" => ["player_setup_choices"],
       "player_setup_choices" => ["player_setup_choices", "choose_turn_order"]
@@ -24,5 +25,13 @@ defmodule AlchemistsEngine.GameLifecycle do
 
   def before_transition(game = %Game{}, "created", "setup_adventurers", :state) do
     {:ok, struct(game, adventurers: AlchemistsEngine.Adventurer.pick_for_setup())}
+  end
+
+  def before_transition(game = %Game{}, "setup_adventurers", "setup_artifacts", :state) do
+    {:ok, struct(game, artifacts: AlchemistsEngine.Artifact.pick_for_setup())}
+  end
+
+  def before_transition(game = %Game{}, "setup_artifacts", "setup_favours", :state) do
+    {:ok, struct(game, favours: AlchemistsEngine.Favour.setup())}
   end
 end

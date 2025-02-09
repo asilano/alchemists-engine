@@ -71,4 +71,36 @@ defmodule AlchemistsEngineTest do
               ]
             }} = AlchemistsEngine.begin_setup(game)
   end
+
+  test "setting up a game adds three sets of three Artifacts to the game" do
+    {:ok, game} = AlchemistsEngine.create_game("Test Game")
+    {:ok, player} = AlchemistsEngine.create_player("Alan")
+    player = struct(player, state: "idle")
+    game = struct(game, players: [player, player, player, player])
+
+    assert {:ok, %AlchemistsEngine.Game{artifacts: {phase_1, phase_2, phase_3}}} =
+             AlchemistsEngine.begin_setup(game)
+
+    assert length(phase_1) == 3
+    assert length(phase_2) == 3
+    assert length(phase_3) == 3
+    assert length(Enum.uniq(phase_1)) == 3
+    assert length(Enum.uniq(phase_2)) == 3
+    assert length(Enum.uniq(phase_3)) == 3
+
+    assert Enum.all?(phase_1, fn art -> art.phase() == 1 end)
+    assert Enum.all?(phase_2, fn art -> art.phase() == 2 end)
+    assert Enum.all?(phase_3, fn art -> art.phase() == 3 end)
+  end
+
+  test "setting up a game adds a list of 22 favours to the game" do
+    {:ok, game} = AlchemistsEngine.create_game("Test Game")
+    {:ok, player} = AlchemistsEngine.create_player("Alan")
+    player = struct(player, state: "idle")
+    game = struct(game, players: [player, player, player, player])
+
+    assert {:ok, %AlchemistsEngine.Game{favours: favours}} = AlchemistsEngine.begin_setup(game)
+
+    assert length(favours) == 22
+  end
 end
