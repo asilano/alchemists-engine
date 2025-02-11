@@ -3,8 +3,10 @@ defmodule AlchemistsEngine.GameLifecycle do
 
   use Fsmx.Fsm,
     transitions: %{
-      "created" => ["adding_player", "setup_adventurers"],
+      "created" => ["adding_player", "seed_rng"],
       "adding_player" => ["created"],
+      "seed_rng" => ["randomise_alchemicals"],
+      "randomise_alchemicals" => ["setup_adventurers"],
       "setup_adventurers" => ["setup_artifacts"],
       "setup_artifacts" => ["setup_favours"],
       "setup_favours" => ["setup_ingredients"],
@@ -18,12 +20,21 @@ defmodule AlchemistsEngine.GameLifecycle do
     {:error, "game already at player limit"}
   end
 
-  def before_transition(%Game{players: players}, "created", "setup_adventurers", :state)
+  def before_transition(%Game{players: players}, "created", "seed_rng", :state)
       when length(players) < 2 do
     {:error, "game needs at least two players to start"}
   end
 
-  def before_transition(game = %Game{}, "created", "setup_adventurers", :state) do
+  def before_transition(game = %Game{inserted_at: inserted_at}, "created", "seed_rng", :state) do
+    :rand.seed(:exs1024, inserted_at)
+    {:ok, game}
+  end
+
+  def before_transition(game, "seed_rng", "randomise_alchemicals", :state) do
+    {:ok, Game.randomise_alchemicals(game)}
+  end
+
+  def before_transition(game = %Game{}, "randomise_alchemicals", "setup_adventurers", :state) do
     {:ok, struct(game, adventurers: AlchemistsEngine.Adventurer.pick_for_setup())}
   end
 

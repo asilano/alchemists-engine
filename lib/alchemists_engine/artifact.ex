@@ -17,7 +17,7 @@ defmodule AlchemistsEngine.Artifact do
   end
 
   defp for_phase(phase) do
-    Enum.filter(all(), fn art -> art.phase == phase end)
+    Enum.filter(all(), fn art -> art.phase() == phase end)
   end
 
   defp all() do

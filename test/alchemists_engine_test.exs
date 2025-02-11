@@ -7,6 +7,14 @@ defmodule AlchemistsEngineTest do
              AlchemistsEngine.create_game("Test Game")
   end
 
+  # TODO: Update this test once Phoenix and Ecto provide timestamps
+  test "stores game creation time with a game" do
+    assert {:ok, %AlchemistsEngine.Game{inserted_at: timestamp}} =
+             AlchemistsEngine.create_game("Test Game")
+
+    assert timestamp > 1_700_000_000
+  end
+
   test "creates a player" do
     assert {:ok, %AlchemistsEngine.Player{name: "Alan"}} = AlchemistsEngine.create_player("Alan")
   end
@@ -52,6 +60,19 @@ defmodule AlchemistsEngineTest do
     {:ok, game} = AlchemistsEngine.add_player_to_game(game, player)
 
     assert {:error, "game needs at least two" <> _} = AlchemistsEngine.begin_setup(game)
+  end
+
+  test "randomising the allocation of alchemicals" do
+    {:ok, game} = AlchemistsEngine.create_game("Test Game")
+    {:ok, player} = AlchemistsEngine.create_player("Alan")
+    player = struct(player, state: "idle")
+    game = struct(game, players: [player, player, player, player])
+
+    assert {:ok, %AlchemistsEngine.Game{alchemicals: alchemicals}} =
+             AlchemistsEngine.begin_setup(game)
+
+    assert alchemicals |> Map.values() |> Enum.sort() ==
+             Enum.sort(AlchemistsEngine.Alchemical.all())
   end
 
   test "setting up a game adds 5 Adventurers to the game" do
