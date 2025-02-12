@@ -124,4 +124,23 @@ defmodule AlchemistsEngineTest do
 
     assert length(favours) == 22
   end
+
+  test "setting up a game adds all 40 ingredients to the game, and draws 5 of them" do
+    {:ok, game} = AlchemistsEngine.create_game("Test Game")
+    {:ok, player} = AlchemistsEngine.create_player("Alan")
+    player = struct(player, state: "idle")
+    game = struct(game, players: [player, player, player, player])
+
+    assert {:ok,
+            %AlchemistsEngine.Game{
+              ingredients: deck,
+              ingredients_discard: discard,
+              foraging: foraging
+            }} =
+             AlchemistsEngine.begin_setup(game)
+
+    assert length(deck) == 35
+    assert length(foraging) == 5
+    assert discard == []
+  end
 end

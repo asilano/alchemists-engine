@@ -78,4 +78,8 @@ defmodule AlchemistsEngine.Alchemical do
       when b1sign == b2sign and b1size != b2size do
     if b1sign == :plus, do: :b_plus, else: :b_minus
   end
+
+  def ingredient_types() do
+    [:fern, :mandrake, :claw, :flower, :mushroom, :toad, :feather, :scorpion]
+  end
 end

@@ -15,34 +15,38 @@ defmodule AlchemistsEngine.GameLifecycle do
       "player_setup_choices" => ["player_setup_choices", "choose_turn_order"]
     }
 
-  def before_transition(%Game{players: players}, "created", "adding_player", :state)
+  def before_transition(%Game{players: players}, _, "adding_player", :state)
       when length(players) >= 4 do
     {:error, "game already at player limit"}
   end
 
-  def before_transition(%Game{players: players}, "created", "seed_rng", :state)
+  def before_transition(%Game{players: players}, _, "seed_rng", :state)
       when length(players) < 2 do
     {:error, "game needs at least two players to start"}
   end
 
-  def before_transition(game = %Game{inserted_at: inserted_at}, "created", "seed_rng", :state) do
+  def before_transition(game = %Game{inserted_at: inserted_at}, _, "seed_rng", :state) do
     :rand.seed(:exs1024, inserted_at)
     {:ok, game}
   end
 
-  def before_transition(game, "seed_rng", "randomise_alchemicals", :state) do
+  def before_transition(game, _, "randomise_alchemicals", :state) do
     {:ok, Game.randomise_alchemicals(game)}
   end
 
-  def before_transition(game = %Game{}, "randomise_alchemicals", "setup_adventurers", :state) do
+  def before_transition(game = %Game{}, _, "setup_adventurers", :state) do
     {:ok, struct(game, adventurers: AlchemistsEngine.Adventurer.pick_for_setup())}
   end
 
-  def before_transition(game = %Game{}, "setup_adventurers", "setup_artifacts", :state) do
+  def before_transition(game = %Game{}, _, "setup_artifacts", :state) do
     {:ok, struct(game, artifacts: AlchemistsEngine.Artifact.pick_for_setup())}
   end
 
-  def before_transition(game = %Game{}, "setup_artifacts", "setup_favours", :state) do
+  def before_transition(game = %Game{}, _, "setup_favours", :state) do
     {:ok, struct(game, favours: AlchemistsEngine.Favour.setup())}
+  end
+
+  def before_transition(game = %Game{}, _, "setup_ingredients", :state) do
+    {:ok, game |> Game.create_and_shuffle_ingredients() |> Game.draw_ingredients_for_foraging()}
   end
 end
